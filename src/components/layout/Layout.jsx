@@ -25,6 +25,7 @@ export default function Layout({ children }) {
             <Link to="/projects" className="workspace-link focus:outline-none focus:ring-2 focus:ring-workspace-accent rounded px-1">Projects</Link>
             <Link to="/journal" className="workspace-link focus:outline-none focus:ring-2 focus:ring-workspace-accent rounded px-1">Learning Journal</Link>
             <Link to="/scripts" className="workspace-link focus:outline-none focus:ring-2 focus:ring-workspace-accent rounded px-1">Scripts</Link>
+            <Link to="/certifications" className="workspace-link focus:outline-none focus:ring-2 focus:ring-workspace-accent rounded px-1">Certifications</Link>
           </div>
         </div>
       </nav>

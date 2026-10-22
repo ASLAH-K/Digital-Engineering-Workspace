@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import Layout from './components/layout/Layout';
 import ScrollToTop from './components/layout/ScrollToTop';
+const Certifications = lazy(() => import('./pages/Certifications'));
 
 // Dynamically import pages (Code Splitting)
 const Portfolio = lazy(() => import('./Portfolio'));
@@ -40,6 +41,7 @@ export default function App() {
               <Route path="/projects" element={<Projects />} />
               <Route path="/journal" element={<Journal />} />
               <Route path="/scripts" element={<Scripts />} />
+              <Route path="/certifications" element={<Certifications />} />
               
               {/* Dynamic Entry Routes */}
               <Route path="/projects/:slug" element={<ProjectEntry />} />

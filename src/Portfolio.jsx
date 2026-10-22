@@ -14,14 +14,12 @@ const skills = {
     "Windows Security",
     "Vulnerability Assessment"
   ],
-
   "Programming Languages": [
     "Python",
     "PowerShell",
     "Java",
     "C++"
   ],
-
   "Tools & Technologies": [
     "Windows",
     "Kali Linux",
@@ -50,45 +48,41 @@ const experience = [
   }
 ];
 
-const certifications = [
-  { name: "CEH-v13", org: "EC Council", date: "On Going" },
-  { name: "Cisco Ethical Hacker", org: "Cisco Networking Academy", date: "Dec 2025" },
-  { name: "IBM Python 101 for Data Science", org: "IBM", date: "Mar 2025" }
-];
-
 export default function Portfolio() {
   // Fetch unified dynamic content
   const recentActivity = getLatestActivity(3);
 
   // Only display projects explicitly marked as featured in their MDX frontmatter
   const projects = getAllProjects().filter(project => project.featured);
-// State for email copy feedback
-const [emailCopied, setEmailCopied] = useState(false);
 
-// Bulletproof copy-to-clipboard fallback
-const handleEmailClick = async (e) => {
-  e.preventDefault(); // Stop the default mailto failure
-  try {
-    await navigator.clipboard.writeText("mhdaslah.k@gmail.com");
-    setEmailCopied(true);
-    setTimeout(() => setEmailCopied(false), 2000); // Reset after 2 seconds
-  } catch (err) {
-    console.error("Failed to copy email: ", err);
-  }
-  // Still attempt to open the mail client for users who have it configured
-  window.location.href = "mailto:mhdaslah.k@gmail.com";
-};
+  // State for email copy feedback
+  const [emailCopied, setEmailCopied] = useState(false);
+
+  // Bulletproof copy-to-clipboard fallback
+  const handleEmailClick = async (e) => {
+    e.preventDefault(); // Stop the default mailto failure
+    try {
+      await navigator.clipboard.writeText("mhdaslah.k@gmail.com");
+      setEmailCopied(true);
+      setTimeout(() => setEmailCopied(false), 2000); // Reset after 2 seconds
+    } catch (err) {
+      console.error("Failed to copy email: ", err);
+    }
+    // Still attempt to open the mail client for users who have it configured
+    window.location.href = "mailto:mhdaslah.k@gmail.com";
+  };
+
   return (
     <div className="text-workspace-text-primary animate-fade-in">
       <SEO
         title="Digital Engineering Workspace"
         description="Digital Engineering Workspace of Muhammed Aslah K, documenting cybersecurity projects, experiments, and learning notes."
       />
-      
+
       {/* 1. Hero Section */}
       <section id="hero" className="min-h-[90vh] lg:min-h-screen flex items-center justify-center pt-24 pb-12 lg:pt-0 lg:pb-0 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full grid lg:grid-cols-[1.1fr_1fr] gap-12 lg:gap-20 items-center">
-          
+
           {/* Left Column: Typography & Actions */}
           <div className="space-y-8 z-10 lg:pr-4">
             <div className="space-y-4">
@@ -102,11 +96,11 @@ const handleEmailClick = async (e) => {
                 Cybersecurity Graduate & Enthusiast
               </p>
             </div>
-            
+
             <p className="text-workspace-text-muted text-lg lg:text-xl leading-relaxed max-w-lg">
-              I'm a recent cybersecurity graduate who enjoys understanding how systems work, why attacks succeed, and how they can be detected or prevented. This workspace is where I document what I build, what I'm learning, and the questions that keep me curious along the way. 
+              I'm a recent cybersecurity graduate who enjoys understanding how systems work, why attacks succeed, and how they can be detected or prevented. This workspace is where I document what I build, what I'm learning, and the questions that keep me curious along the way.
             </p>
-            
+
             {/* Social Links */}
             <div className="flex gap-4 pt-4">
               <a href="https://github.com/ASLAH-K" target="_blank" rel="noopener noreferrer" aria-label="View my GitHub Profile" className="p-3.5 bg-workspace-surface border border-workspace-border hover:border-workspace-accent/50 text-workspace-text-muted hover:text-workspace-accent rounded-xl transition-all duration-workspace-base hover:shadow-glow hover:-translate-y-1">
@@ -145,10 +139,9 @@ const handleEmailClick = async (e) => {
                 src="/profile.jpg"
                 alt="Muhammed Aslah K"
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                loading="eager" 
+                loading="eager"
                 fetchpriority="high"
               />
-              {/* Inner shadow overlay to integrate the photo into the dark design system */}
               <div className="absolute inset-0 rounded-full shadow-[inset_0_0_60px_rgba(7,11,20,0.6)] pointer-events-none transition-opacity duration-700 group-hover:opacity-50"></div>
             </div>
           </div>
@@ -179,7 +172,6 @@ const handleEmailClick = async (e) => {
                 <Link to={`/projects/${project.slug}`} className="text-xl font-semibold mb-3 text-white group-hover:text-workspace-accent transition-colors duration-workspace-fast">
                   {project.title}
                 </Link>
-                {/* Dynamically fallback to project.summary to support our new schema */}
                 <p className="text-workspace-text-muted text-sm mb-6 leading-relaxed flex-grow">{project.summary || project.description}</p>
                 <div className="flex flex-wrap gap-2 mt-auto">
                   {(project.tech_stack || project.tags || []).map((tag, tagIdx) => (
@@ -244,11 +236,10 @@ const handleEmailClick = async (e) => {
       {/* 6. Credentials (Experience, Categorized Skills, Certs) */}
       <section id="credentials" className="workspace-section bg-workspace-surface/30">
         <div className="workspace-container grid lg:grid-cols-2 gap-16">
-          
+
           {/* Experience */}
           <div>
             <h3 className="text-2xl font-bold text-white mb-8">Experience & Education</h3>
-            {/* ACCESSIBILITY FIX: Converted to semantic list (<ul> and <li>) */}
             <ul className="space-y-8">
               {experience.map((exp, idx) => (
                 <li key={idx} className="relative pl-6 border-l border-workspace-border">
@@ -259,7 +250,7 @@ const handleEmailClick = async (e) => {
                   <p className="text-workspace-text-muted text-sm leading-relaxed">{exp.description}</p>
                 </li>
               ))}
-              
+
               <li className="relative pl-6 border-l border-workspace-border">
                 <div className="absolute w-3 h-3 bg-workspace-border rounded-full -left-[6.5px] top-1.5"></div>
                 <h4 className="text-lg font-semibold text-white">B.Tech–M.Tech Integrated CSE (Cybersecurity)</h4>
@@ -288,20 +279,20 @@ const handleEmailClick = async (e) => {
                 ))}
               </div>
             </div>
-            
+
+            {/* Certifications (Compact Link) */}
             <div>
               <h3 className="text-2xl font-bold text-white mb-6">Certifications</h3>
-              <div className="space-y-4">
-                {certifications.map((cert, idx) => (
-                  <div key={idx} className="workspace-card p-4 hover:-translate-y-0.5 hover:shadow-none">
-                    <h4 className="font-semibold text-white">{cert.name}</h4>
-                    <div className="flex justify-between items-center mt-1">
-                      <p className="text-sm text-workspace-text-muted">{cert.org}</p>
-                      <p className="text-xs font-mono text-gray-500">{cert.date}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <p className="text-workspace-text-muted text-sm mb-6 leading-relaxed">
+                A growing record of my cybersecurity certifications, course completions, and practical training. Certificates and verification links are available where provided.
+              </p>
+              <Link
+                to="/certifications"
+                className="group inline-flex items-center gap-2 text-sm font-medium text-workspace-accent hover:text-workspace-glow transition-colors duration-workspace-fast focus:outline-none focus:ring-2 focus:ring-workspace-accent rounded px-1"
+              >
+                View All Credentials
+                <span className="group-hover:translate-x-1 transition-transform duration-workspace-fast" aria-hidden="true">→</span>
+              </Link>
             </div>
           </div>
 
@@ -313,10 +304,10 @@ const handleEmailClick = async (e) => {
         <div className="workspace-container max-w-4xl mx-auto text-center space-y-8">
           <h3 className="text-3xl font-bold text-white">Let's Connect</h3>
           <p className="text-workspace-text-muted text-lg max-w-2xl mx-auto">
-           This workspace is always evolving, and so am I. I'm currently looking for my first full-time cybersecurity role while continuing to build projects and document everything I learn. If something here caught your attention—or you'd like to talk about cybersecurity, one of my projects, or a potential opportunity—I'd love to hear from you.
+            This workspace is always evolving, and so am I. I'm currently looking for my first full-time cybersecurity role while continuing to build projects and document everything I learn. If something here caught your attention—or you'd like to talk about cybersecurity, one of my projects, or a potential opportunity—I'd love to hear from you.
           </p>
           <div className="flex flex-wrap justify-center gap-4 pt-4">
-          <a href="mailto:mhdaslah.k@gmail.com" onClick={handleEmailClick} className="btn-primary w-40">
+            <a href="mailto:mhdaslah.k@gmail.com" onClick={handleEmailClick} className="btn-primary w-40">
               {emailCopied ? (
                 <><CheckCircle2 size={18} /> Copied!</>
               ) : (
