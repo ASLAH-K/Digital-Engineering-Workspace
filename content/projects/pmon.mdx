@@ -16,11 +16,11 @@ related_scripts: []
 
 PMon (Personal Device Monitoring Tool) is a small, Windows-focused security monitoring project I built to explore an idea that came to me while learning about SIEM and EDR tools.
 
-Enterprise security teams have tools that collect events, look for suspicious patterns, raise alerts, and help analysts investigate what happened. I liked that idea and started wondering: **why should that kind of visibility be limited to enterprise environments?** Most of us use more than one device every day. Antivirus, a firewall, and the security features built into an operating system all have their place, but I wanted something that helped a regular user understand what was happening on their own device—not just whether a known malicious file had been detected.
+Enterprise security teams have tools that collect events, look for suspicious patterns, raise alerts, and help analysts investigate what happened. I liked that idea and started wondering: **why should that kind of visibility be limited to enterprise environments?** Most of us use more than one device every day. Antivirus, firewalls, and the security features built into operating systems all have their place, but I wanted better visibility into what was happening on a personal device and a way to look for activity patterns that might deserve attention.
 
 The larger idea was a personal monitoring system that could eventually bring activity from several devices into one place. For example, an unusual login on a laptop could trigger an alert that the user sees on their phone. That was the idea that started PMon.
 
-What I actually built was a more focused first version: **a host-based monitoring and rule-based alerting tool for a single Windows device**. Cross-platform support and multi-device monitoring turned out to be bigger problems than I could reasonably solve within the time available. I narrowed the scope rather than pretend those parts were finished.
+What I actually built was a more focused first version: **a host-based monitoring and rule-based alerting tool for a single Windows device**. Cross-platform support and multi-device monitoring turned out to be bigger problems than I could reasonably solve within the time available. I narrowed the scope rather than pretend those parts were finished. This is a completed academic prototype, not a production-ready endpoint protection product.
 
 [View the PMon GitHub repository](https://github.com/ASLAH-K/Personal-Device-Monitoring-Tool-PMon)
 
@@ -38,7 +38,7 @@ The implementation described in my project report includes:
 - Blocking selected IP addresses through Windows Firewall and maintaining records of blocked IPs and USB device identifiers.
 - Storing events and alerts in a local SQLite database, with optional encryption and integrity-verification features described in the report.
 
-The aim was not to build another antivirus. I wanted to experiment with the parts around visibility, event correlation, detection rules, alert review, and a user deciding what to do next.
+The focus was the monitoring workflow itself: collecting events, evaluating rules, giving the user enough context to review alerts, and supporting a limited response.
 
 ## How it works
 
@@ -120,11 +120,9 @@ If I return to the original multi-device vision, I would first need to design th
 
 ## What I learned
 
-PMon started with a simple question: if SIEM and EDR workflows are useful in an organization, what would a smaller version look like for one person's computer?
+Building PMon taught me that collecting events is only one part of a monitoring system. The events need to be stored in a useful format, rules need context and sensible thresholds, alerts need a review workflow, and response actions need to be understandable to the person using them.
 
-Building even a limited version made the gap between an idea and a working system obvious. Collecting events is only one part of the job. The events need to be stored in a useful format, rules need context and sensible thresholds, alerts need a review workflow, and response actions need to be understandable to the person using them. Privacy also becomes more complicated as soon as the idea grows from one device to several.
-
-I didn't reach the original cross-device vision, and I don't want to describe the Windows prototype as though I did. What I did get was a practical way to explore host monitoring, event-driven detection, local storage, rule configuration, a dashboard, and response actions in one project—and a much clearer idea of what I would need to design before trying to expand it.
+The other lesson was architectural: keeping one device's data local is relatively straightforward, but a central view across several devices raises new questions about device identity, trust, secure communication, access control, and what data should be shared. I did not solve those problems in this version. I did get hands-on experience connecting host telemetry, configurable detection rules, local storage, a dashboard, and limited response actions—and a clearer idea of what the larger system would require.
 
 ---
 

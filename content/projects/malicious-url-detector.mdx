@@ -1,6 +1,6 @@
 ---
 title: "AI-Driven Malicious URL Detection & Risk Scoring"
-date: "2026-01-17"
+date: "2024-12-01"
 summary: "My first academic project: a local Flask application that uses a Random Forest model and lexical URL features to classify links and provide two complementary risk scores."
 tech_stack: ["Python", "scikit-learn", "Random Forest", "Pandas", "NumPy", "Flask", "joblib", "Matplotlib"]
 github_url: "https://github.com/ASLAH-K/Malicious_URL_Detector"
@@ -8,7 +8,7 @@ demo_url: ""
 tags: ["machine-learning", "malicious-url-detection", "phishing", "random-forest", "risk-scoring", "python"]
 status: "completed"
 featured: true
-related_journals: ["welcome-to-my-engineering-notebook"]
+related_journals: []
 related_scripts: []
 ---
 
@@ -18,7 +18,7 @@ This was my **first academic project**, and it started with something fairly str
 
 I wanted to answer a question: **can a model decide whether a URL looks malicious just by looking at the URL itself?** No DNS lookup, no WHOIS request, no external reputation API during analysis—just the structure and characters that are already there.
 
-The result was a Random Forest classifier trained on labelled URLs, wrapped in a small Flask web application. A user enters a URL and gets a benign/malicious prediction along with two risk scores. It is not a browser protection product or a complete phishing defence. It is my attempt to explore how machine learning and feature engineering can help with one specific cybersecurity problem.
+The result was a Random Forest classifier trained on labelled URLs, wrapped in a small Flask web application. A user enters a URL and gets a benign/malicious prediction along with two risk scores. It is a completed academic prototype, not a browser protection product or a complete phishing defence. I wanted to use it to explore how machine learning and feature engineering could help with one specific cybersecurity problem.
 
 [View the Malicious URL Detector repository](https://github.com/ASLAH-K/Malicious_URL_Detector)
 
@@ -143,17 +143,15 @@ This was an academic project, so I wanted to be clear about what it does and wha
 - **The Flask app is a local prototype.** The repository documents running it at `127.0.0.1`; I have not presented it as a hosted public scanning service.
 - **Portability needs attention.** The current `app.py` includes a machine-specific absolute path for loading the saved model. That path should be made relative to the project directory before expecting the app to run unchanged on another computer.
 
-Those boundaries are not reasons to dismiss the project. They define the problem it was built to explore and the improvements that would make sense if I continued developing it.
+Those boundaries define what I evaluated and what I would need to improve before making broader claims about the tool.
 
 ## What I learned
 
 This was my first academic project, and it gave me a practical entry point into combining machine learning with cybersecurity. I learned that building a classifier involves much more than calling `fit()` and reporting an accuracy score. Dataset balance, feature extraction, train/test separation, hyperparameter tuning, false positives, false negatives, and the way a model is connected to an application all affect what the final tool is actually useful for.
 
-The feature-importance issue around HTTPS was probably one of the more useful lessons. Something that seems like a sensible signal can become too influential, and it takes a closer look at the model to notice that. I also had to think about how to present a result so that it is more meaningful than simply saying "malicious" or "benign"—which is why I experimented with two different risk scores.
+The feature-importance issue around HTTPS was one of the more useful lessons. A signal that seems sensible can become too influential, and the metrics alone may not reveal that. I also had to think about how to present results so they were more useful than simply saying "malicious" or "benign," which is why I experimented with two risk scores.
 
-I started this project after learning about how people get tricked by malicious links and wanting to build one of the cybersecurity projects I kept seeing suggested online. I came away with something more valuable than just a demo: experience turning a labelled dataset into a model, evaluating it, and connecting it to an interface that someone could actually use.
-
-If I revisit it, I would first make the model loading portable, test it on newer and more varied datasets, and look more closely at false negatives and false positives. A browser extension or optional threat-intelligence integration could be future additions, but I would want to evaluate their privacy and accuracy trade-offs before adding them.
+If I revisit the project, I would first make model loading portable, test against newer and more varied datasets, and investigate false negatives and false positives more closely. A browser extension or optional threat-intelligence integration could be future additions, but I would want to evaluate their privacy and accuracy trade-offs before adding them.
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: "LARS - LLM-Assisted Sigma Rule Optimization System"
-date: "2026-04-24"
+date: "2026-04-20"
 summary: "A dataset-driven pipeline for evaluating Sigma detection rules, finding false-positive patterns, and using an LLM to suggest rule refinements while checking true-positive retention."
 tech_stack: ["Python", "FastAPI", "Next.js", "React", "Tailwind CSS", "PyYAML", "NDJSON", "SQLite", "pySigma", "LLM APIs"]
 github_url: ""
@@ -20,11 +20,11 @@ A detection rule can be useful and still generate a lot of noise. A legitimate p
 
 That became the idea behind LARS. I wanted to build a pipeline that would run a Sigma rule against malicious and benign log datasets, identify patterns behind false positives, use an LLM to suggest focused filtering conditions, and then run the modified rule again. The important part was checking both sides of the change: **did the false positives go down, and did the rule keep detecting the malicious examples it caught before?**
 
-This is a research and learning project for exploring that workflow. It is not a live SIEM, and it does not automatically deploy modified rules into an organization's environment.
+This is a completed academic prototype for exploring that workflow, not a production-ready detection-engineering platform. It is not a live SIEM, and it does not automatically deploy modified rules into an organization's environment.
 
 ## The idea: fix the rule, not just the alert queue
 
-My main goal was to make rule tuning more systematic than repeatedly changing a condition and hoping the result was better.
+I didn't want to change a rule by trial and error or judge success only by the number of alerts that disappeared. I wanted the benign records that triggered a rule to guide a targeted change, then to test the changed rule against malicious as well as benign data.
 
 The approach I wanted to test was fairly direct:
 
@@ -114,7 +114,7 @@ The report describes a web interface built around a Python backend and a Next.js
 | pySigma | Sigma rule conversion support |
 | LLM API / SDK | Generating proposed rule refinements |
 
-The report also describes features for explaining rule changes, contextualizing optimized rules with MITRE ATT&CK, and working with different LLM providers. Those capabilities belong to the project's reported scope; the central workflow documented here remains evaluation, false-positive pattern analysis, optimization, re-evaluation, comparison, and conversion.
+The project report also discusses ideas such as explaining rule changes, adding MITRE ATT&CK context, and supporting different LLM providers. I keep those separate from the core workflow described above rather than treating them as proof of mature or production-ready integrations.
 
 ## What LARS does not do yet
 
@@ -131,13 +131,11 @@ Future work described in the report includes real-time processing, support for m
 
 ## What I learned
 
-LARS came from a question I had while learning about SIEMs: if false positives are such a common problem, can we make rule tuning less of a manual guessing process?
+The part I found most useful was the feedback loop. A rule produces matches; the datasets show which matches are useful and which ones are noise; the noise can reveal patterns; and those patterns can inform a targeted change. An LLM can help propose that change, but it does not remove the need to measure the result or inspect the rule.
 
-The part I found interesting was the feedback loop. A rule produces matches; the datasets show which matches are useful and which ones are noise; the noise can reveal patterns; and those patterns can inform a targeted change. The LLM is useful in that loop, but it doesn't remove the need to measure the result or inspect the change.
+Building the pipeline also made the limits of the evaluator clear. Its conclusions depend on the rules, matching logic, and datasets it supports. A good before-and-after number is encouraging, but it is not proof that a detection rule will behave well on unseen logs. If I continue developing LARS, improving the rule engine and evaluating against held-out data would matter more than simply adding more AI features.
 
-Building this pipeline also made one limitation obvious: the evaluator is only as useful as the rules, matching logic, and datasets it supports. A nice before-and-after number is encouraging, but it isn't the same as proving a detection rule will behave well on new logs. If I continue developing LARS, improving the rule engine and evaluating against held-out data would be more valuable than simply adding more AI features.
-
-For now, LARS is my attempt to turn an idea about false-positive reduction into a tangible detection-engineering workflow: evaluate, investigate, refine, and evaluate again.
+The workflow I wanted to explore is straightforward: evaluate, investigate, refine, and evaluate again.
 
 ---
 
