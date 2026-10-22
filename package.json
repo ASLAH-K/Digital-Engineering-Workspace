@@ -16,6 +16,7 @@
     "react-helmet-async": "^3.0.0",
     "react-router-dom": "^7.18.1",
     "remark-frontmatter": "^5.0.0",
+    "remark-gfm": "^4.0.1",
     "remark-mdx-frontmatter": "^6.0.0"
   },
   "devDependencies": {
