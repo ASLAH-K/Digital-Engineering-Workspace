@@ -3,7 +3,7 @@
 Welcome to my corner of the internet. This started as a portfolio because, apparently, every student needs one. Somewhere along the way, though, it turned into something more useful to me — a place to keep my projects, experiments, notes, and whatever cybersecurity rabbit hole I'm currently stuck in.
 It’s part portfolio, part workspace, and occasionally a place where I put things before I forget them.
 
-**Live Deployment:** [https://portfolio-smoky-five-55.vercel.app/](https://portfolio-smoky-five-55.vercel.app/)
+**Live Deployment:** [https://mhdaslah.vercel.app/](https://mhdaslah.vercel.app/)
 
 ---
 
@@ -48,7 +48,6 @@ I'd rather document the process honestly than only publish polished success stor
 ### Content & Styling
 - MDX 
 - Tailwind CSS 
-- Framer Motion 
 
 ### Deployment & Infrastructure
 - Vercel 
@@ -67,7 +66,7 @@ I'd rather document the process honestly than only publish polished success stor
 ┣ 📂 public                   
 ┃ ┣ profile.jpg               
 ┃ ┣ resume.pdf                
-┃ ┗ og-default.jpg            
+┃ ┗ og-default.png            
 ┣ 📂 src
 ┃ ┣ 📂 components
 ┃ ┃ ┣ SEO.jsx                 
