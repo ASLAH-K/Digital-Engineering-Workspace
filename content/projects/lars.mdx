@@ -1,0 +1,144 @@
+---
+title: "LARS - LLM-Assisted Sigma Rule Optimization System"
+date: "2026-04-24"
+summary: "A dataset-driven pipeline for evaluating Sigma detection rules, finding false-positive patterns, and using an LLM to suggest rule refinements while checking true-positive retention."
+tech_stack: ["Python", "FastAPI", "Next.js", "React", "Tailwind CSS", "PyYAML", "NDJSON", "SQLite", "pySigma", "LLM APIs"]
+github_url: ""
+demo_url: ""
+tags: ["detection-engineering", "sigma-rules", "false-positive-reduction", "llm", "siem"]
+status: "completed"
+featured: true
+related_journals: []
+related_scripts: []
+---
+
+## Overview
+
+LARS stands for **LLM-Assisted Sigma Rule Optimization System**. I started building it while learning about SIEMs and detection rules, after running into one of the problems that keeps coming up in security operations: false positives.
+
+A detection rule can be useful and still generate a lot of noise. A legitimate process, account, or event may match the same conditions as suspicious activity, leaving an analyst to sort through alerts that do not represent a real threat. I began wondering how detection engineers deal with that problem in practice, and one idea stood out to me: instead of only filtering alerts after a rule fires, why not inspect the benign logs that triggered it and improve the rule itself?
+
+That became the idea behind LARS. I wanted to build a pipeline that would run a Sigma rule against malicious and benign log datasets, identify patterns behind false positives, use an LLM to suggest focused filtering conditions, and then run the modified rule again. The important part was checking both sides of the change: **did the false positives go down, and did the rule keep detecting the malicious examples it caught before?**
+
+This is a research and learning project for exploring that workflow. It is not a live SIEM, and it does not automatically deploy modified rules into an organization's environment.
+
+## The idea: fix the rule, not just the alert queue
+
+My main goal was to make rule tuning more systematic than repeatedly changing a condition and hoping the result was better.
+
+The approach I wanted to test was fairly direct:
+
+1. Establish how the original rule behaves on known malicious and benign logs.
+2. Look for repeated characteristics in the benign records that triggered the rule.
+3. Give the original rule and those false-positive patterns to an LLM and ask it to suggest a more specific rule.
+4. Run the proposed rule against the same datasets again.
+5. Compare the before-and-after results and inspect exactly what changed.
+
+I also wanted the process to preserve true positives. Reducing false positives by making a rule so restrictive that it misses the activity it was written to detect would defeat the purpose. LARS therefore compares the true-positive and false-positive counts before and after optimization rather than judging a change only by the number of alerts removed.
+
+## What I built
+
+The implementation described in my project report brings the main steps into one web-based workflow:
+
+- Load a Sigma rule from YAML and check that required parts, including `detection` and `condition`, are present.
+- Load pre-collected malicious and benign log datasets in NDJSON format.
+- Evaluate the rule against both datasets to calculate true-positive (TP) and false-positive (FP) counts.
+- Examine false-positive records to find recurring patterns in fields such as account name, source image, target image, channel, and event ID.
+- Send the rule and the extracted patterns to an LLM to generate a proposed refinement.
+- Re-evaluate the optimized rule against the same datasets and compare the results with the baseline.
+- Display the original and modified rule side by side, with a diff view to make changes easier to inspect.
+- Convert the resulting Sigma rule into query formats for Splunk, Elastic, and Microsoft Sentinel.
+
+The LLM is used to help refine detection logic; it is not the component that independently detects threats in a live environment. The dataset evaluation and comparison stages are what let me inspect the effect of the suggested changes.
+
+## How the pipeline works
+
+### 1. Rule and log loading
+
+LARS loads Sigma rules from YAML. The logs are stored as newline-delimited JSON, with one JSON record per line. The project report describes two sets of input data: malicious logs, used to count matches as true positives, and benign logs, used to count matches as false positives.
+
+The report describes the evaluation scope as two selected Sigma rules using preloaded datasets from the OTRF project. This is a deliberate limitation of the current implementation, not broad coverage of every Sigma rule or log source.
+
+### 2. Rule evaluation
+
+The project includes a custom rule-matching engine. As described in the report, it checks fields such as `Channel` and `EventID` using exact matches and looks for keywords in normalized content. That content can be drawn from fields such as `Message`, `Payload`, or `ContextInfo`, depending on the log format. Matching is case-insensitive and uses basic AND-style logic.
+
+That approach gave the project a consistent way to evaluate its selected rules across the supplied logs. It should not be mistaken for complete support for the full Sigma specification. The report identifies more advanced rule semantics and condition operators as future work.
+
+### 3. False-positive analysis
+
+When a rule matches benign logs, LARS collects those false-positive records and looks for common patterns. The report lists fields such as account names, source and target images, channels, and event IDs as examples. It also shows example records so the user can see what is contributing to the noise.
+
+This stage is important because the optimizer should have something concrete to work from. The aim is not to ask an LLM to make a rule "better" in the abstract; it is to give it evidence about the benign activity that is causing unwanted matches.
+
+### 4. LLM-assisted optimization
+
+The optimizer sends the existing Sigma rule and the patterns found during false-positive analysis to an LLM. The generated version generally adds or adjusts filtering conditions intended to exclude the recurring benign cases while keeping the original detection intent.
+
+LARS also presents an explanation for the proposed changes and lets the user compare the original rule with the optimized version. That makes the output easier to review than accepting a rewritten YAML rule without seeing what changed or why.
+
+An LLM-generated rule is still a proposal. It needs review and testing before it should be trusted, especially because an overly broad exclusion can remove genuine detections along with false positives.
+
+### 5. Re-evaluation and comparison
+
+After optimization, LARS runs the proposed rule over the same malicious and benign datasets again. It compares the new TP and FP counts with the baseline and presents measures such as false-positive reduction and true-positive retention.
+
+The application can also convert the optimized rule into query text for SIEM platforms such as Splunk, Elastic, and Microsoft Sentinel. This is rule conversion/export, not a live integration that deploys or runs the rule inside those SIEMs.
+
+## A result shown in the report
+
+One example in the report's results section shows the following before-and-after counts:
+
+| Metric | Original rule | Optimized rule |
+| --- | ---: | ---: |
+| True positives | 1 | 1 |
+| False positives | 1,461 | 270 |
+
+For that displayed run, the false-positive count fell by approximately **81.5%**, while the one true-positive match remained. That is the kind of result I wanted the pipeline to make visible: not just that the rule changed, but what happened to its detections when evaluated again.
+
+There is an important caveat here. This example contains only one true-positive match, and it comes from the selected datasets used in the project. It is a demonstration of the workflow, not proof that LARS will achieve the same reduction on other datasets, rules, or live environments. Evaluating on the same data before and after optimization can also make a rule fit those examples too closely, so unseen logs would be needed to assess generalization properly.
+
+## Interface and technology
+
+The report describes a web interface built around a Python backend and a Next.js frontend. The interface lets the user start an evaluation or optimization run, review the baseline metrics, inspect false-positive patterns, view the generated rule, compare the rule versions, read the explanation, and access converted query text.
+
+| Component | Role in LARS |
+| --- | --- |
+| Python | Backend processing and pipeline logic |
+| FastAPI and Uvicorn | REST API and local backend server |
+| Next.js, React, and JavaScript | Browser-based user interface |
+| Tailwind CSS | Frontend styling |
+| PyYAML | Loading Sigma rules from YAML |
+| NDJSON / JSON | Loading the log datasets |
+| SQLite | Local storage for rules and results, as described in the report |
+| pySigma | Sigma rule conversion support |
+| LLM API / SDK | Generating proposed rule refinements |
+
+The report also describes features for explaining rule changes, contextualizing optimized rules with MITRE ATT&CK, and working with different LLM providers. Those capabilities belong to the project's reported scope; the central workflow documented here remains evaluation, false-positive pattern analysis, optimization, re-evaluation, comparison, and conversion.
+
+## What LARS does not do yet
+
+LARS is intentionally narrower than an operational detection-engineering platform. The project report identifies these limitations and future directions:
+
+- **No real-time log ingestion.** The current workflow evaluates preloaded datasets rather than a live stream from endpoints or a SIEM.
+- **Limited rule coverage.** The reported evaluation focuses on two selected Sigma rules. More rules and broader Sigma condition support would be needed for wider use.
+- **A simplified matching engine.** The current matcher uses basic field and content matching, not the full range of Sigma semantics.
+- **No automatic SIEM deployment.** LARS can generate query text for several SIEMs, but the report does not describe an implemented deployment integration.
+- **Limited-scale evaluation.** The report does not establish a broad benchmark across many rules, datasets, environments, or unseen logs.
+- **Human review still matters.** A lower false-positive count does not by itself prove that the optimized rule is safer or more useful. The changes need to be inspected and validated against relevant malicious activity.
+
+Future work described in the report includes real-time processing, support for more rules, a more complete rule engine, direct SIEM integration, larger-scale evaluation, and improvements to the interface and optimization approach.
+
+## What I learned
+
+LARS came from a question I had while learning about SIEMs: if false positives are such a common problem, can we make rule tuning less of a manual guessing process?
+
+The part I found interesting was the feedback loop. A rule produces matches; the datasets show which matches are useful and which ones are noise; the noise can reveal patterns; and those patterns can inform a targeted change. The LLM is useful in that loop, but it doesn't remove the need to measure the result or inspect the change.
+
+Building this pipeline also made one limitation obvious: the evaluator is only as useful as the rules, matching logic, and datasets it supports. A nice before-and-after number is encouraging, but it isn't the same as proving a detection rule will behave well on new logs. If I continue developing LARS, improving the rule engine and evaluating against held-out data would be more valuable than simply adding more AI features.
+
+For now, LARS is my attempt to turn an idea about false-positive reduction into a tangible detection-engineering workflow: evaluate, investigate, refine, and evaluate again.
+
+---
+
+*This write-up is based on my LARS project report. It describes the implementation and sample result documented there; planned capabilities and future improvements are not presented as completed features.*

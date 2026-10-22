@@ -1,0 +1,162 @@
+---
+title: "AI-Driven Malicious URL Detection & Risk Scoring"
+date: "2026-01-17"
+summary: "My first academic project: a local Flask application that uses a Random Forest model and lexical URL features to classify links and provide two complementary risk scores."
+tech_stack: ["Python", "scikit-learn", "Random Forest", "Pandas", "NumPy", "Flask", "joblib", "Matplotlib"]
+github_url: "https://github.com/ASLAH-K/Malicious_URL_Detector"
+demo_url: ""
+tags: ["machine-learning", "malicious-url-detection", "phishing", "random-forest", "risk-scoring", "python"]
+status: "completed"
+featured: true
+related_journals: ["welcome-to-my-engineering-notebook"]
+related_scripts: []
+---
+
+## Overview
+
+This was my **first academic project**, and it started with something fairly straightforward: I was learning about malicious URLs and how a single click can lead someone to a phishing page, malware, or a scam. When I started looking for cybersecurity project ideas, malicious URL detection was also one of the common suggestions I kept coming across. So I decided to build my own version and understand what was happening underneath, rather than just use it as a project title.
+
+I wanted to answer a question: **can a model decide whether a URL looks malicious just by looking at the URL itself?** No DNS lookup, no WHOIS request, no external reputation API during analysis—just the structure and characters that are already there.
+
+The result was a Random Forest classifier trained on labelled URLs, wrapped in a small Flask web application. A user enters a URL and gets a benign/malicious prediction along with two risk scores. It is not a browser protection product or a complete phishing defence. It is my attempt to explore how machine learning and feature engineering can help with one specific cybersecurity problem.
+
+[View the Malicious URL Detector repository](https://github.com/ASLAH-K/Malicious_URL_Detector)
+
+## What I built
+
+The project has two main parts: the model pipeline used to extract features, train and evaluate the classifier, and a local Flask application that loads the trained model and lets a user submit a URL for analysis.
+
+The model uses **lexical features**—character and structure-based details taken from the URL string. The application does not need to visit the destination website to make its prediction. That keeps the inference path lightweight and avoids sending each submitted URL to a separate threat-intelligence service.
+
+The application returns:
+
+- A classification: **Malicious** or **Benign**.
+- A probability-based risk score derived from the model's predicted probability.
+- A custom-weighted risk score based on selected URL features.
+- A risk category such as Low, Medium, or High.
+
+The two scores approach the same URL from different angles. The probability-based score follows the classifier's output, while the custom score lets selected lexical characteristics contribute according to predefined weights. They are indicators to help interpret the result, not guarantees that a link is safe or dangerous.
+
+## How it works
+
+The basic flow is:
+
+1. **Submit a URL.** The user enters a URL in the Flask interface.
+2. **Extract lexical features.** The application converts the URL into numeric and boolean values the model can use.
+3. **Run the trained model.** The Random Forest classifier predicts whether the URL belongs to the malicious or benign class.
+4. **Calculate risk scores.** The app produces a probability-based score and a separate custom-weighted score, then maps them to risk categories.
+5. **Show the result.** The classification and scores appear in the web interface.
+
+The trained model is saved with `joblib` and loaded by the Flask application. The app is intended to run locally; the repository's README documents launching it with `python app.py` and opening `http://127.0.0.1:5000` in a browser.
+
+## What the model looks at
+
+A URL contains more clues than its domain name alone. For this project, I extracted lexical features such as:
+
+- URL length and the number of dots, slashes, digits, hyphens, and selected special characters.
+- An approximate subdomain count and the number of URL path tokens.
+- The ratio of digits to the URL's length.
+- The presence of keywords commonly seen in lures, such as `login`, `verify`, `account`, or `payment`.
+- Whether the URL resembles a known shortened URL format.
+- Whether it ends in selected executable or archive-like extensions, such as `.exe`, `.zip`, `.bat`, or `.vbs`.
+- Shannon entropy, used here as a measure of how varied or unpredictable the characters in a URL are.
+
+None of these features proves that a URL is malicious on its own. A legitimate website can have a long URL, many subdomains, or a word like `login`; a malicious URL can also look ordinary. The point is to combine multiple weak clues and let the trained model learn patterns from labelled examples.
+
+## A feature-engineering issue I ran into
+
+One interesting part of training was that `https_present` initially dominated feature importance—by the report's analysis, it accounted for a very large share of the model's influence. That was a warning sign that the model might lean too heavily on one indicator instead of learning a broader combination of URL characteristics.
+
+I experimented with combining the HTTPS indicator with other features, including subdomain count, dot count, and digit count, then removing the original `https_present` feature. These combined features were named `https_subdomain`, `https_num_dots`, and `https_num_digits`.
+
+This was a useful reminder that choosing an algorithm is only one part of machine learning. The way features are represented can change what the model learns, and a high score alone doesn't tell the whole story.
+
+## Dataset and model training
+
+The project report describes a balanced dataset of **632,508 labelled URLs**, with benign and malicious URLs represented in equal proportions. The dataset was sourced from Kaggle and processed in Python. Model development and training were carried out in Google Colab, and the trained Random Forest model was serialized for use by the local Flask application.
+
+I used a train/test split of 80/20:
+
+| Split | URLs |
+| --- | ---: |
+| Training set | 506,006 |
+| Test set | 126,502 |
+| Total | 632,508 |
+
+For hyperparameter tuning, I used `GridSearchCV` with 3-fold cross-validation. The search explored combinations of `max_depth` and `min_samples_split`. The final parameters recorded in the report and notebook were:
+
+- `max_depth = 20`
+- `min_samples_split = 10`
+- `random_state = 42`
+
+The model was saved with `joblib`, allowing the web application to load it without retraining every time someone submits a URL.
+
+## Evaluation results
+
+The project report records the following results on the held-out test set:
+
+| Metric | Reported result |
+| --- | ---: |
+| Accuracy | 98.84% |
+| Precision | 99.73% |
+| Recall | 97.95% |
+| F1 score | 98.83% |
+| ROC-AUC | 99.72% |
+
+The report also includes this confusion matrix:
+
+| Actual class | Predicted malicious | Predicted benign |
+| --- | ---: | ---: |
+| Malicious | 62,068 | 1,299 |
+| Benign | 170 | 62,965 |
+
+In practical terms, the model correctly classified many URLs in this test split, but it still missed some malicious examples and incorrectly flagged some benign ones. Those errors matter: a missed malicious URL can create a false sense of safety, while a false alarm can make people distrust the tool.
+
+These numbers describe the experiment on this dataset and split. They should not be read as a guarantee of the same performance against today's live URLs or every type of phishing campaign. The data's composition, freshness, and representativeness all affect how well the model may generalize.
+
+## Two ways to look at risk
+
+I included two risk-scoring methods rather than returning only a class label.
+
+**Probability-based score:** this uses the classifier's predicted probability for the malicious class and maps it to a risk category. It follows the model's output, though a model probability is not automatically a perfectly calibrated real-world probability.
+
+**Custom-weighted score:** this combines normalized feature values using predefined weights. It provides a second perspective based on selected URL characteristics rather than relying solely on the classifier's output.
+
+I liked having both because a single label does not explain much to a user. The scores add context, but they are still only as useful as their design and validation. They should not be treated as a formal security rating or used as the only basis for deciding whether to open a link.
+
+## Privacy and the local-first approach
+
+I wanted the tool to analyse submitted URLs without sending them to third-party reputation services. At runtime, the classifier uses the URL's lexical features and the saved model; it does not need DNS/WHOIS lookups or external threat-intelligence API calls to produce a prediction.
+
+There is a distinction worth making: **the model's training workflow was not entirely offline**. The labelled dataset came from Kaggle, and the report describes training in Google Colab. My privacy goal applies to the local URL-checking application: a URL entered into the running Flask tool is scored from its text rather than submitted to an external URL-scanning service.
+
+That also defines the trade-off. The tool cannot use current domain reputation, domain age, page contents, redirects, or a live threat feed unless those capabilities are added later. Keeping inference local helps with privacy and simplicity, but it limits the context available to the classifier.
+
+## Limitations
+
+This was an academic project, so I wanted to be clear about what it does and what it does not do.
+
+- **Lexical features only.** The model does not visit the site, inspect HTML or JavaScript, follow redirects, or analyse the downloaded payload.
+- **No live reputation checks.** It does not query DNS, WHOIS, or online threat-intelligence APIs during classification. A newly registered or compromised domain may not be obvious from its URL structure.
+- **Patterns can be misleading.** Legitimate and malicious URLs can share similar characteristics. The model can produce false positives and false negatives.
+- **Evaluation is dataset-dependent.** The reported metrics are from the selected labelled dataset and hold-out split, not an independent benchmark of all current internet traffic.
+- **The Flask app is a local prototype.** The repository documents running it at `127.0.0.1`; I have not presented it as a hosted public scanning service.
+- **Portability needs attention.** The current `app.py` includes a machine-specific absolute path for loading the saved model. That path should be made relative to the project directory before expecting the app to run unchanged on another computer.
+
+Those boundaries are not reasons to dismiss the project. They define the problem it was built to explore and the improvements that would make sense if I continued developing it.
+
+## What I learned
+
+This was my first academic project, and it gave me a practical entry point into combining machine learning with cybersecurity. I learned that building a classifier involves much more than calling `fit()` and reporting an accuracy score. Dataset balance, feature extraction, train/test separation, hyperparameter tuning, false positives, false negatives, and the way a model is connected to an application all affect what the final tool is actually useful for.
+
+The feature-importance issue around HTTPS was probably one of the more useful lessons. Something that seems like a sensible signal can become too influential, and it takes a closer look at the model to notice that. I also had to think about how to present a result so that it is more meaningful than simply saying "malicious" or "benign"—which is why I experimented with two different risk scores.
+
+I started this project after learning about how people get tricked by malicious links and wanting to build one of the cybersecurity projects I kept seeing suggested online. I came away with something more valuable than just a demo: experience turning a labelled dataset into a model, evaluating it, and connecting it to an interface that someone could actually use.
+
+If I revisit it, I would first make the model loading portable, test it on newer and more varied datasets, and look more closely at false negatives and false positives. A browser extension or optional threat-intelligence integration could be future additions, but I would want to evaluate their privacy and accuracy trade-offs before adding them.
+
+---
+
+**Project repository:** [Malicious_URL_Detector](https://github.com/ASLAH-K/Malicious_URL_Detector)
+
+*This page is based on my project report, training notebook, and public repository. Reported evaluation results describe the documented dataset and test split; they should not be interpreted as a guarantee that every URL will be classified correctly.*

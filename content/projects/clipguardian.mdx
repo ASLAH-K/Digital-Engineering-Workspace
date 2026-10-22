@@ -1,0 +1,126 @@
+---
+title: "ClipGuardian — Clipboard Security Monitor"
+date: "2025-05-10"
+summary: "A Windows clipboard-monitoring project that looks for sensitive data, risky commands, and suspicious URLs, then warns the user and offers quick ways to clear copied content."
+tech_stack: ["Python", "Tkinter", "pyperclip", "pywin32", "pynput", "winotify", "requests", "psutil", "Google Safe Browsing API", "Have I Been Pwned"]
+github_url: "https://github.com/ASLAH-K/ClipGuardian"
+demo_url: ""
+tags: ["clipboard-security", "data-leakage", "windows", "privacy", "sensitive-data-detection", "python"]
+status: "completed"
+featured: false
+related_journals: []
+related_scripts: []
+---
+
+## Overview
+
+ClipGuardian started with a question I had while learning about data security and information disclosure: **we copy sensitive information all the time, so what happens to it after we press `Ctrl + C`?**
+
+Passwords, email addresses, payment details, API keys, crypto wallet addresses, personal identifiers — a lot of things we would never want to expose casually pass through the clipboard. We copy something, paste it somewhere, and move on. The clipboard is useful, but it is also another place where sensitive data can sit around or be accessed by other software running on the same machine.
+
+That made me wonder why we don't pay more attention to clipboard security. What if someone accidentally leaves a password or token copied? What if malware or another unwanted process reads or changes the clipboard? A small mistake could become an information-disclosure problem, and clipboard hijacking can make the risk more than just theoretical.
+
+So I built **ClipGuardian**, a Windows-focused clipboard monitoring tool that watches for new copied text, checks it for selected sensitive-data patterns and risky content, and warns the user when something deserves attention. I also wanted quick ways to inspect or clear the clipboard, plus reminders so that sensitive content does not stay there longer than necessary.
+
+This is a personal security project and an exploration of one often-overlooked part of everyday data handling. It is not a full Data Loss Prevention (DLP) platform, and it should not be treated as a replacement for endpoint protection.
+
+[View ClipGuardian on GitHub](https://github.com/ASLAH-K/ClipGuardian)
+
+## What I built
+
+The current project is a Python application for Windows with a Tkinter interface and a background clipboard-monitoring loop. When monitoring is enabled, the tool checks for clipboard changes and examines new text against a collection of patterns and heuristics.
+
+The project report and public code describe these main features:
+
+- **Sensitive-data pattern checks** for items such as email addresses, payment card numbers, phone numbers, US-style SSNs, IP addresses, API-key-like strings, AWS credential patterns, private-key markers, and Bitcoin, Ethereum, and Solana wallet addresses.
+- **Password-related checks**, using simple heuristics to decide whether copied text looks like a password and a Have I Been Pwned (HIBP) lookup to check for known exposure.
+- **Risky-command detection** for a small set of recognizable destructive shell or Windows commands. When one of these patterns is detected, the current code attempts to clear the clipboard rather than leave the command ready to paste.
+- **URL checks** through a Google Safe Browsing API integration path, with a configurable domain whitelist.
+- **Windows toast notifications** when selected sensitive or risky content is detected.
+- **Clear-clipboard reminders** with a configurable delay, so the user gets a nudge to remove sensitive content after copying it.
+- **Global hotkeys** for clearing the clipboard, inspecting its current contents, and toggling monitoring.
+- **A small GUI** with Main, Settings, and About tabs, light/dark themes, a recent clipboard-history view, and options for enabling or disabling checks.
+- **Windows startup integration**, which can add or remove an entry under the current user's Run registry key.
+
+The idea was to make the user aware of what they had copied and give them a fast next action. A notification alone cannot stop every clipboard attack, but it can make an otherwise invisible event visible.
+
+## How it works
+
+The core workflow is straightforward:
+
+1. **Watch for clipboard changes.** A background thread polls the Windows clipboard roughly every half-second while monitoring is active. It compares new text with recent content to avoid repeatedly processing the same copy.
+2. **Keep a short in-memory history.** New clipboard text is added to the application's history list for display in the GUI. The default history limit in the code is 50 entries.
+3. **Check for sensitive patterns.** Regular expressions look for known formats such as card numbers, emails, phone numbers, wallet addresses, API-key patterns, and private-key markers. These checks are pattern-based, so they are clues rather than perfect identification.
+4. **Check other risky content.** The tool looks for a small set of hard-coded destructive command patterns, scans text for URLs, and applies a heuristic to decide whether content might be a password.
+5. **Use external checks when enabled and configured.** URL reputation checking uses Google Safe Browsing. The password-breach check uses the HIBP Pwned Passwords range endpoint.
+6. **Notify and remind.** When a configured detection fires, ClipGuardian can show a Windows notification and, for recognised sensitive data, schedule a reminder to clear the clipboard.
+7. **Let the user act.** The GUI and global hotkeys provide quick access to inspection, monitoring controls, and clipboard clearing.
+
+The implementation uses a polling loop rather than an operating-system event subscription. It is a relatively simple approach for a personal Windows utility, but it also means clipboard checks are periodic and limited to text content the code can read.
+
+## The checks are patterns, not magic
+
+A useful part of this project was thinking about what it actually means to detect sensitive data. Some values have recognizable formats: an Ethereum address, an email address, or an AWS access-key ID can be matched by a pattern. Other data is harder to classify. A random string might be a password, an API token, or simply text that happens to look complex.
+
+ClipGuardian therefore combines regular expressions with basic heuristics. The password logic considers features such as length, character variety, URLs, and recent clipboard entries. That is a practical starting point, but it will inevitably miss some real secrets and flag some harmless text. It is not a trained classifier, and the project report does not establish measured precision or recall for these detections.
+
+The URL and password-breach checks add another type of signal, but they also depend on external services and network availability. They should be treated as assistance for the user, not as a guarantee that a URL is safe or a password is uncompromised.
+
+## Quick actions and the interface
+
+The GUI was designed around a few actions that I wanted to be easy to reach without digging through menus:
+
+| Shortcut | Action |
+| --- | --- |
+| `Ctrl + Shift + C` | Clear the clipboard and the tool's visible history |
+| `Ctrl + Shift + I` | Open a clipboard-inspection window |
+| `Ctrl + Shift + M` | Toggle clipboard monitoring on or off |
+
+The Settings tab includes controls for selected detection features, reminders, API configuration, URL-whitelist domains, and Windows auto-start. The Main tab displays monitoring status and recent clipboard history. The interface also includes light and dark themes.
+
+The history is held in memory by the running application rather than maintained as a persistent clipboard archive by design. The current code limits it to recent entries and provides a clear-history action. However, the logging behavior has an important caveat described below, so I would not claim that no clipboard text can ever reach a disk log in this version.
+
+## Privacy was part of the idea — and there is a trade-off
+
+I wanted the tool to run on the user's own Windows device rather than upload a full clipboard history to a central service. Pattern matching and the normal monitoring loop happen locally, and the app keeps its recent clipboard history in memory while it is running.
+
+But I also wanted more useful checks than local patterns alone could provide. That introduces a trade-off:
+
+- **Google Safe Browsing:** when the URL check is used, the candidate URL is sent to Google's Safe Browsing API for reputation checking. That is not a fully local check.
+- **Have I Been Pwned:** the code hashes a candidate password with SHA-1 and sends the first five hexadecimal characters to the Pwned Passwords range endpoint. It compares the returned suffixes locally rather than sending the original password as plain text. This reduces what is disclosed to the service, but it is still an external request.
+- **Configuration:** API settings are saved in a local `config.json` file by the current code. Real API keys in that file should be treated as secrets and should never be committed to a public repository.
+
+So my original intention was local-first clipboard monitoring, not a claim that every feature works fully offline. If I were extending the project, I would make the privacy choices more explicit in the interface and explain clearly when a copied URL or password-derived value is sent to an external service.
+
+## A connection to OWASP and DLP
+
+I connected this idea to **OWASP Top 10 A04:2021 — Insecure Design** because it made me think about a design blind spot: an ordinary, convenient workflow can expose sensitive data if the system does not help people manage the risk. Clipboard use is not itself an OWASP vulnerability, and ClipGuardian does not make an application formally compliant with the OWASP Top 10. I see the connection as a design lesson: account for how sensitive information is handled in normal user workflows, not only in obvious attack paths.
+
+The idea also overlaps conceptually with **Data Loss Prevention (DLP)**: both are concerned with sensitive information moving through systems. ClipGuardian is much narrower. It is a small, single-user Windows prototype, not an enterprise DLP solution with organization-wide policies, endpoint fleet management, centralized auditing, or guaranteed prevention controls.
+
+## Limitations and implementation details I would revisit
+
+This is a personal prototype, and checking the public source against the report surfaced a few gaps that are worth being honest about:
+
+- **Pattern coverage is limited.** Regex and heuristics cannot reliably identify every sensitive value, and false positives are possible. The project has no published benchmark measuring detection accuracy.
+- **The URL-check path needs validation.** In the current public Python file, the URL-check method appears to reference a variable named `content` that is not defined in that method. I would fix and test this path before claiming URL-reputation checks work reliably in all cases.
+- **Some optional controls are incomplete in the current source.** The monitoring loop checks whether clipboard-intrusion and cloud-sync-prevention helper methods exist, but those method definitions are not present in the public file I reviewed. The settings are visible, but I would not describe those two controls as verified protection in this revision.
+- **Clipboard text can reach a log.** Although the design intent is to avoid persistently storing raw clipboard contents, the current risky-command detection path logs the full matched content. That conflicts with the privacy goal and should be changed to log the detection type and timestamp without logging the copied text.
+- **Cloud clipboard prevention is not a guarantee.** Even the report notes that operating-system clipboard synchronization behavior can vary. A small user-space tool cannot promise to stop every clipboard access or sync mechanism.
+- **Windows only.** The project uses Windows clipboard APIs, registry settings, Windows notifications, and Windows startup integration. Linux, macOS, and mobile support were not implemented.
+
+These are not reasons the project was pointless. They are exactly the kinds of things I need to notice when moving from a design/report to a real implementation—especially for a tool whose job is to protect sensitive information. I would fix the logging issue and validate the URL path before presenting this version as something people should rely on for security.
+
+## What I learned
+
+I built this because the clipboard felt like one of those everyday features that everyone uses and almost nobody thinks about from a security perspective. We copy secrets because it is convenient, then assume the sensitive part of the workflow is over once we paste them. I wanted to experiment with a tool that makes that temporary exposure harder to forget.
+
+The project also made the privacy question more complicated than I first expected. Keeping monitoring local sounds simple, until you add reputation checks that depend on external services. Even the clipboard history is a trade-off: it helps users review what happened, but it also means the application is temporarily holding the very data it is trying to protect.
+
+The biggest lesson is that security tools need to follow the same rules they are trying to teach. If a clipboard monitor stores copied content in a log, or presents a best-effort setting as complete prevention, it can create a new problem while trying to solve another. That is the kind of gap I would want to address before expanding the project further.
+
+For now, ClipGuardian is my attempt to give clipboard activity a little more visibility: notice sensitive or risky content, tell the user, and make clearing it easy. It is a learning project, not a finished DLP product—but the problem it explores is worth paying attention to.
+
+---
+
+*This page is based on my project report and the public ClipGuardian repository. Reported goals, implemented behavior, and unfinished or unverified controls are separated deliberately; the project should not be interpreted as a guarantee that all clipboard threats are prevented.*

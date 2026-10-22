@@ -1,18 +1,133 @@
 ---
 title: "Personal Device Monitoring Tool (PMon)"
 date: "2025-12-01"
-summary: "Lightweight Windows security monitoring tool that tracks login attempts, USB insertions, and process creation."
-tech_stack: ["Python", "Flask", "Security Monitoring", "SQLite"]
-github_url: "https://github.com/ASLAH-K"
+summary: "A Windows-focused, host-based security monitoring project with event collection, configurable rule-based detection, a local Flask dashboard, and user-controlled response actions."
+tech_stack: ["Python", "Flask", "SQLite", "PyYAML", "psutil", "pywin32", "WMI"]
+github_url: "https://github.com/ASLAH-K/Personal-Device-Monitoring-Tool-PMon"
 demo_url: ""
-tags: ["endpoint-security", "python"]
+tags: ["endpoint-security", "host-monitoring", "windows", "siem", "blue-team"]
 status: "completed"
 featured: true
-related_journals: ["welcome-to-my-engineering-notebook"]
-related_scripts: ["ioc-extractor"]
+related_journals: []
+related_scripts: []
 ---
 
 ## Overview
-PMon is a host-based monitoring system designed to provide lightweight SIEM capabilities for a single Windows device. 
 
-*(Full project documentation goes here).*
+PMon (Personal Device Monitoring Tool) is a small, Windows-focused security monitoring project I built to explore an idea that came to me while learning about SIEM and EDR tools.
+
+Enterprise security teams have tools that collect events, look for suspicious patterns, raise alerts, and help analysts investigate what happened. I liked that idea and started wondering: **why should that kind of visibility be limited to enterprise environments?** Most of us use more than one device every day. Antivirus, a firewall, and the security features built into an operating system all have their place, but I wanted something that helped a regular user understand what was happening on their own device—not just whether a known malicious file had been detected.
+
+The larger idea was a personal monitoring system that could eventually bring activity from several devices into one place. For example, an unusual login on a laptop could trigger an alert that the user sees on their phone. That was the idea that started PMon.
+
+What I actually built was a more focused first version: **a host-based monitoring and rule-based alerting tool for a single Windows device**. Cross-platform support and multi-device monitoring turned out to be bigger problems than I could reasonably solve within the time available. I narrowed the scope rather than pretend those parts were finished.
+
+[View the PMon GitHub repository](https://github.com/ASLAH-K/Personal-Device-Monitoring-Tool-PMon)
+
+## What I built
+
+PMon collects selected Windows activity, stores events locally, evaluates configurable rules, and presents the resulting events and alerts through a Flask dashboard. It is a personal project inspired by SIEM-style workflows; it is **not a replacement for an enterprise SIEM or EDR platform**.
+
+The implementation described in my project report includes:
+
+- Monitoring Windows authentication events, process activity, and USB device activity.
+- Evaluating events with a YAML-configured rule engine.
+- Creating contextual alerts with timestamps, rule identifiers, severity, and related event details.
+- Reviewing events and alerts in a local web dashboard.
+- Recording alert dispositions and remarks to keep track of investigation decisions.
+- Blocking selected IP addresses through Windows Firewall and maintaining records of blocked IPs and USB device identifiers.
+- Storing events and alerts in a local SQLite database, with optional encryption and integrity-verification features described in the report.
+
+The aim was not to build another antivirus. I wanted to experiment with the parts around visibility, event correlation, detection rules, alert review, and a user deciding what to do next.
+
+## How it works
+
+At a high level, the workflow is:
+
+1. **Collect events.** PMon observes selected host activity from Windows security logs, process information, and USB device events.
+2. **Normalize and store.** Collected events are represented in a structured form and saved in the local SQLite database.
+3. **Evaluate detection rules.** The rule engine checks events and patterns against enabled rules defined in YAML, including configured thresholds, time windows, and severity.
+4. **Create alerts.** When a rule condition is met, PMon records an alert with the rule identifier, time, severity, and relevant context.
+5. **Review and respond.** The user opens the dashboard to inspect the event or alert, add remarks or a disposition, and take a supported response action when appropriate.
+6. **Keep monitoring.** The monitoring workflow continues, with event and response records available locally for later review.
+
+This structure kept the collection, detection, storage, dashboard, and response responsibilities separate enough to work on as distinct parts of the project.
+
+## Detection ideas
+
+The rule engine is configured through YAML rather than having every detection condition hard-coded into the application. The report describes rules and detection scenarios including:
+
+- Repeated failed authentication attempts that may indicate brute-force activity.
+- Suspicious process execution, including execution from untrusted directories.
+- Rapid process creation that could be a sign worth investigating.
+- Logins outside the expected working hours.
+- New or unauthorized USB device activity.
+
+These are **rule-based indicators**, not proof that an attack has occurred. A rule can produce a false positive, and the usefulness of a detection depends on its conditions, thresholds, the available event data, and the environment in which it runs. The dashboard supports reviewing the context rather than treating every alert as a confirmed incident.
+
+## The dashboard and response workflow
+
+The Flask dashboard was intended to make local host activity easier to inspect than raw logs alone. The report describes views for:
+
+- An overview of event and alert counts, severity distribution, event types, recent activity, and blocked items.
+- An events table with timestamps, sources, event types, severity, and contextual details, along with search/filtering and data export.
+- Alert lists and alert-detail views with rule information, severity, timestamp, and triggering context.
+- An acknowledgement workflow where the user can add remarks and assign a disposition, such as true positive, false positive, benign, or investigating.
+- Detection-rule controls to enable or disable rules.
+- Records of blocked IP addresses and blocked USB device identifiers.
+
+For response actions, the report documents IP blocking through Windows Firewall. For USB devices, PMon keeps a record of blocked device identifiers and checks subsequent device events against those records. This is best described as application-level device tracking and restriction logic—not as a claim that PMon provides a universal, hardware-level USB blocking mechanism on every Windows configuration.
+
+## Technology
+
+| Component | Role in PMon |
+| --- | --- |
+| Python | Monitoring logic and application code |
+| `pywin32` | Access to Windows-specific facilities, including event logs and firewall integration |
+| `psutil` | Process and system information |
+| WMI (`wmi`) | USB device event monitoring |
+| PyYAML | Configurable detection rules and settings |
+| SQLite | Local persistence for events, alerts, and blocked-item records |
+| Flask | Local web dashboard and API endpoints |
+| Python logging | Application and diagnostic logs |
+| Cryptography / keyring libraries | Support for protecting selected configuration data and optional stored-data encryption, as described in the report |
+| Windows Firewall | IP-address blocking response action |
+
+The report describes development and testing on Windows 11, targeting Windows 10/11, with Python 3.10 or later. Since the implementation relies on Windows-specific APIs and services, it is not cross-platform as it stands.
+
+## Privacy was part of the design
+
+One of my original concerns was where security telemetry should live. Authentication events, process information, and device activity can reveal a lot about someone's computer use. Keeping that data on the device seemed like the sensible default, so the implementation stores its monitoring data locally and does not depend on a cloud service for its core workflow.
+
+That decision also exposed a trade-off in my original idea. A genuinely centralized view of several personal devices would require some way to move or synchronize data between them. That creates additional questions about trust, transport security, access control, and what should or should not leave each device. I did not solve those problems in this version. PMon remained a local Windows monitor rather than quietly sending personal telemetry elsewhere.
+
+Local storage reduces the need to share telemetry with an external service, but it does not make the data automatically secure. File-system permissions, configuration, encryption settings, and the security of the device itself still matter.
+
+## Limitations and what I would do next
+
+The biggest limitation is also the clearest scope boundary: **PMon monitors one Windows environment; it does not yet provide the multi-device personal monitoring system I originally imagined.**
+
+Other limitations and possible next steps identified during the project include:
+
+- **Cross-platform support:** macOS and Linux were not implemented. Windows-specific collection and response mechanisms would need alternatives on those systems.
+- **Centralized multi-device monitoring:** there is no completed hub that aggregates telemetry from multiple devices, and no phone companion or phone push-alert workflow in this version.
+- **Additional telemetry:** integration with sources such as Sysmon could provide more event detail, but it was future scope rather than a feature I am claiming here.
+- **Detection improvements:** machine-learning-assisted detection and external threat-intelligence integration were ideas for later exploration, not part of the implemented rule engine described here.
+- **Response automation:** the current concept is user-driven response through the dashboard. More automated actions would need careful safeguards to avoid disrupting legitimate activity.
+- **Evaluation evidence:** the project report documents the modules and demonstrates the dashboard and response workflow through screenshots. It does not provide a measured detection-accuracy score, a formal false-positive rate, or a benchmark that I can responsibly quote here.
+
+If I return to the original multi-device vision, I would first need to design the trust and privacy boundaries: how devices authenticate to each other, which telemetry is shared, how it is protected in transit, and how the user can control and delete it. Adding more detection rules would not solve those architectural questions.
+
+## What I learned
+
+PMon started with a simple question: if SIEM and EDR workflows are useful in an organization, what would a smaller version look like for one person's computer?
+
+Building even a limited version made the gap between an idea and a working system obvious. Collecting events is only one part of the job. The events need to be stored in a useful format, rules need context and sensible thresholds, alerts need a review workflow, and response actions need to be understandable to the person using them. Privacy also becomes more complicated as soon as the idea grows from one device to several.
+
+I didn't reach the original cross-device vision, and I don't want to describe the Windows prototype as though I did. What I did get was a practical way to explore host monitoring, event-driven detection, local storage, rule configuration, a dashboard, and response actions in one project—and a much clearer idea of what I would need to design before trying to expand it.
+
+---
+
+**Project repository:** [Personal-Device-Monitoring-Tool-PMon](https://github.com/ASLAH-K/Personal-Device-Monitoring-Tool-PMon)
+
+*This page describes the project based on my project report. The implementation details and future ideas are intentionally separated; planned capabilities should not be read as features already delivered.*
