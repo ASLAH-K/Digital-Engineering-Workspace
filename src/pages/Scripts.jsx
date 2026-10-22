@@ -1,12 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { getAllScripts } from '../utils/content';
+import SEO from '../components/SEO';
 
 export default function Scripts() {
   const scripts = getAllScripts();
 
   return (
     <div className="max-w-4xl mx-auto py-12 px-6">
+      <SEO
+        title="Automation Scripts & Utilities"
+        description="Automation Scripts & Utilities of Muhammed Aslah K, documenting cybersecurity projects, experiments, and learning notes."
+      />
       <h1 className="text-3xl font-bold text-gray-100 mb-8">Automation Scripts & Utilities</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {scripts.map((script) => (

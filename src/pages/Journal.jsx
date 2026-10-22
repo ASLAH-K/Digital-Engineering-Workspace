@@ -1,12 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { getAllJournals } from '../utils/content';
+import SEO from '../components/SEO';
 
 export default function Journal() {
   const journals = getAllJournals();
 
   return (
     <div className="max-w-4xl mx-auto py-12 px-6">
+      <SEO
+        title="Learning Journal"
+        description="Learning Journal of Muhammed Aslah K, documenting cybersecurity projects, experiments, and learning notes."
+      />
       <h1 className="text-3xl font-bold text-gray-100 mb-8">Learning Journal</h1>
       <div className="space-y-6">
         {journals.map((journal) => (

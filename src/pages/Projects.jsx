@@ -1,12 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { getAllProjects } from '../utils/content';
+import SEO from '../components/SEO';
 
 export default function Projects() {
   const projects = getAllProjects();
 
   return (
     <div className="max-w-6xl mx-auto py-12 px-6">
+      <SEO
+        title="Engineering Projects"
+        description="Engineering Projects of Muhammed Aslah K, documenting cybersecurity projects, experiments, and learning notes."
+      />
       <h1 className="text-3xl font-bold text-gray-100 mb-8">Engineering Projects</h1>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {projects.map((project) => (

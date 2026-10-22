@@ -80,9 +80,9 @@ const handleEmailClick = async (e) => {
 };
   return (
     <div className="text-workspace-text-primary animate-fade-in">
-      <SEO 
-        title="Home" 
-        description="Digital Engineering Workspace of Muhammed Aslah K, Cybersecurity Graduate."
+      <SEO
+        title="Digital Engineering Workspace"
+        description="Digital Engineering Workspace of Muhammed Aslah K, documenting cybersecurity projects, experiments, and learning notes."
       />
       
       {/* 1. Hero Section */}
