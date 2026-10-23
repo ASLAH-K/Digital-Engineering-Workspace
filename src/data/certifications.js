@@ -2,6 +2,18 @@
 
 export const certifications = [
     {
+      id: "isc2-cc",
+      name: "Certified in Cybersecurity (CC)",
+      issuer: "ISC2",
+      type: "Professional Certification",
+      date: "2026",
+      credentialId: "3475043",
+      certificateUrl: "/certificates/isc2-certified-in-cybersecurity.pdf",
+      verificationUrl: "https://www.credly.com/badges/93c57d92-1351-4201-8d8d-db0bd09d5513/public_url",
+      verificationLabel: "View Credly Badge",
+      expiresOn: "31 October 2029"
+    },
+    {
       id: "ceh-v13",
       name: "CEH-v13",
       issuer: "EC Council",
