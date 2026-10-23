@@ -1,10 +1,10 @@
 export const currentlyExploring = {
-  lastUpdated: "2026-07-12",
+  lastUpdated: "2026-10-23",
   topics: [
-    "Detection Engineering",
-    "Windows Event Logs",
-    "Threat Hunting",
-    "PowerShell Security",
-    "SIEM Rule Tuning"
+    "SOC Operations & Incident Investigation",
+    "Windows Event Log Analysis",
+    "Threat Hunting & Incident Response",
+    "Web Application & API Security Testing",
+    "CEH v13 AI Knowledge Exam Preparation"
   ]
 };
