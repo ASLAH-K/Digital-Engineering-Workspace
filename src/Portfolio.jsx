@@ -7,25 +7,49 @@ import SEO from './components/SEO';
 
 const skills = {
   "Cybersecurity": [
-    "Detection Engineering",
-    "Threat Hunting",
-    "Digital Forensics",
+    "Security Operations",
+    "Log Analysis",
+    "Threat Monitoring",
+    "SIEM Fundamentals",
+    "Incident Analysis",
+    "Network Security",
+    "Vulnerability Assessment",
+    "Web Application Security Testing",
     "OSINT",
-    "Windows Security",
-    "Vulnerability Assessment"
+    "Digital Forensics"
   ],
-  "Programming Languages": [
-    "Python",
-    "PowerShell",
-    "Java",
-    "C++"
-  ],
-  "Tools & Technologies": [
-    "Windows",
+
+  "Tools & Platforms": [
     "Kali Linux",
+    "Burp Suite",
+    "Nmap",
+    "Wireshark",
+    "OWASP ZAP",
+    "Nessus",
+    "Nuclei",
+    "Metasploit",
+    "FTK",
+    "Maltego",
+    "VirusTotal"
+    ],
+
+  "Programming & Development": [
+    "Python",
+    "Bash",
+    "Java",
+    "C++",
+    "SQL",
     "Flask",
-    "SQLite",
-    "Git"
+    "REST APIs",
+    "Git & GitHub"
+  ],
+
+  "AI & Machine Learning": [
+    "Machine Learning",
+    "Feature Engineering",
+    "Data Preprocessing",
+    "Model Training",
+    "Random Forest"
   ]
 };
 
