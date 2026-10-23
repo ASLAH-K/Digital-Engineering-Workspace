@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Github, Linkedin, Mail, Terminal, MapPin, Phone, FileText, CheckCircle2 } from 'lucide-react';
+import { Github, Linkedin, Mail, Terminal, MapPin ,FileText, CheckCircle2 } from 'lucide-react';
 import { getLatestActivity, getAllProjects } from './utils/content';
 import { currentlyExploring } from './data/exploring';
 import SEO from './components/SEO';
@@ -30,6 +30,14 @@ const skills = {
 };
 
 const experience = [
+  {
+    role: "Cybersecurity Intern",
+    company: "C-DIT Kerala — Functionality & Security Audit Department (FSAD)",
+    location: "Kerala",
+    period: "Aug 2026 - Sep 2026",
+    description:
+      "Conducted an authorized web application security assessment within a defined testing scope. Used OWASP ZAP, Nmap, Nessus, and Nuclei alongside supplementary discovery tools to map the application and investigate potential security issues. Manually validated selected findings, assessed role-based access controls, and prepared a structured technical report documenting evidence, remediation recommendations, and assessment limitations."
+  },
   {
     role: "Intern",
     company: "Kerala Police (Cyber Crime Police Station)",
@@ -186,8 +194,28 @@ export default function Portfolio() {
         </div>
       </section>
 
-      {/* 4. Latest Activity */}
-      <section className="workspace-section bg-workspace-surface/30">
+      {/* 4. Professional Experience (Dedicated Full-Width Section) */}
+      <section id="experience" className="workspace-section bg-workspace-surface/30">
+        <div className="workspace-container max-w-4xl mx-auto">
+          <div className="mb-8">
+            <h3 className="text-3xl font-bold text-white">Professional Experience</h3>
+          </div>
+          <ul className="space-y-8">
+            {experience.map((exp, idx) => (
+              <li key={idx} className="relative pl-6 border-l border-workspace-border">
+                <div className="absolute w-3 h-3 bg-workspace-accent rounded-full -left-[6.5px] top-1.5 shadow-glow"></div>
+                <h4 className="text-lg font-semibold text-white">{exp.role}</h4>
+                <p className="text-workspace-accent text-sm font-medium mb-1">{exp.company}</p>
+                <p className="text-gray-500 text-xs font-mono mb-3">{exp.period} • {exp.location}</p>
+                <p className="text-workspace-text-muted text-sm leading-relaxed">{exp.description}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* 5. Latest Activity */}
+      <section className="workspace-section">
         <div className="workspace-container max-w-4xl mx-auto">
           <div className="mb-8">
             <h3 className="text-3xl font-bold text-white">Latest Activity</h3>
@@ -213,7 +241,7 @@ export default function Portfolio() {
         </div>
       </section>
 
-      {/* 5. Currently Exploring */}
+      {/* 6. Currently Exploring */}
       <section className="workspace-section">
         <div className="workspace-container max-w-4xl mx-auto bg-workspace-surface/50 border border-workspace-accent/20 rounded-xl p-8 md:p-12 text-center shadow-glow">
           <h3 className="text-2xl font-bold text-white mb-4">Currently Exploring</h3>
@@ -233,73 +261,62 @@ export default function Portfolio() {
         </div>
       </section>
 
-      {/* 6. Credentials (Experience, Categorized Skills, Certs) */}
-      <section id="credentials" className="workspace-section bg-workspace-surface/30">
-        <div className="workspace-container grid lg:grid-cols-2 gap-16">
-
-          {/* Experience */}
-          <div>
-            <h3 className="text-2xl font-bold text-white mb-8">Experience & Education</h3>
-            <ul className="space-y-8">
-              {experience.map((exp, idx) => (
-                <li key={idx} className="relative pl-6 border-l border-workspace-border">
-                  <div className="absolute w-3 h-3 bg-workspace-accent rounded-full -left-[6.5px] top-1.5 shadow-glow"></div>
-                  <h4 className="text-lg font-semibold text-white">{exp.role}</h4>
-                  <p className="text-workspace-accent text-sm font-medium mb-1">{exp.company}</p>
-                  <p className="text-gray-500 text-xs font-mono mb-3">{exp.period} • {exp.location}</p>
-                  <p className="text-workspace-text-muted text-sm leading-relaxed">{exp.description}</p>
-                </li>
-              ))}
-
-              <li className="relative pl-6 border-l border-workspace-border">
-                <div className="absolute w-3 h-3 bg-workspace-border rounded-full -left-[6.5px] top-1.5"></div>
-                <h4 className="text-lg font-semibold text-white">B.Tech–M.Tech Integrated CSE (Cybersecurity)</h4>
-                <p className="text-workspace-text-muted text-sm font-medium mb-1">National Forensic Sciences University, Delhi</p>
-                <p className="text-gray-500 text-xs font-mono mb-3">2021 - 2026</p>
-              </li>
-            </ul>
-          </div>
-
-          {/* Categorized Skills & Certs */}
-          <div className="space-y-12">
-            <div>
-              <h3 className="text-2xl font-bold text-white mb-6">Capabilities</h3>
-              <div className="space-y-6">
-                {Object.entries(skills).map(([category, items]) => (
-                  <div key={category}>
-                    <h4 className="text-sm font-mono text-gray-500 mb-3 uppercase tracking-wider">{category}</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {items.map(skill => (
-                        <span key={skill} className="workspace-pill">
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Certifications (Compact Link) */}
-            <div>
-              <h3 className="text-2xl font-bold text-white mb-6">Certifications</h3>
-              <p className="text-workspace-text-muted text-sm mb-6 leading-relaxed">
-                A growing record of my cybersecurity certifications, course completions, and practical training. Certificates and verification links are available where provided.
-              </p>
-              <Link
-                to="/certifications"
-                className="group inline-flex items-center gap-2 text-sm font-medium text-workspace-accent hover:text-workspace-glow transition-colors duration-workspace-fast focus:outline-none focus:ring-2 focus:ring-workspace-accent rounded px-1"
-              >
-                View All Credentials
-                <span className="group-hover:translate-x-1 transition-transform duration-workspace-fast" aria-hidden="true">→</span>
-              </Link>
-            </div>
-          </div>
-
+      {/* 7. Education */}
+      <section id="education" className="workspace-section bg-workspace-surface/30">
+        <div className="workspace-container max-w-4xl mx-auto">
+          <h3 className="text-3xl font-bold text-white mb-8">Education</h3>
+          <ul className="space-y-8">
+            <li className="relative pl-6 border-l border-workspace-border">
+              <div className="absolute w-3 h-3 bg-workspace-border rounded-full -left-[6.5px] top-1.5"></div>
+              <h4 className="text-lg font-semibold text-white">B.Tech–M.Tech Integrated CSE (Cybersecurity)</h4>
+              <p className="text-workspace-text-muted text-sm font-medium mb-1">National Forensic Sciences University, Delhi</p>
+              <p className="text-gray-500 text-xs font-mono mb-3">2021 - 2026</p>
+            </li>
+          </ul>
         </div>
       </section>
 
-      {/* 7. Contact & Resume */}
+      {/* 8. Capabilities */}
+      <section id="capabilities" className="workspace-section">
+        <div className="workspace-container">
+          <div className="mb-10 text-center md:text-left">
+            <h3 className="text-3xl font-bold text-white">Capabilities</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Object.entries(skills).map(([category, items]) => (
+              <div key={category} className="workspace-card flex flex-col h-full">
+                <h4 className="text-sm font-mono text-gray-500 mb-5 uppercase tracking-wider border-b border-workspace-border/50 pb-3">{category}</h4>
+                <div className="flex flex-wrap gap-2">
+                  {items.map(skill => (
+                    <span key={skill} className="workspace-pill">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 9. Certifications */}
+      <section id="certifications" className="workspace-section bg-workspace-surface/30">
+        <div className="workspace-container max-w-3xl mx-auto text-center space-y-6">
+          <h3 className="text-3xl font-bold text-white">Certifications</h3>
+          <p className="text-workspace-text-muted text-lg leading-relaxed">
+            A growing record of my cybersecurity certifications, course completions, and practical training. Certificates and verification links are available where provided.
+          </p>
+          <Link
+            to="/certifications"
+            className="group inline-flex items-center gap-2 text-sm font-medium text-workspace-accent hover:text-workspace-glow transition-colors duration-workspace-fast focus:outline-none focus:ring-2 focus:ring-workspace-accent rounded px-1"
+          >
+            View All Credentials
+            <span className="group-hover:translate-x-1 transition-transform duration-workspace-fast" aria-hidden="true">→</span>
+          </Link>
+        </div>
+      </section>
+
+      {/* 10. Contact & Resume */}
       <section id="contact" className="workspace-section">
         <div className="workspace-container max-w-4xl mx-auto text-center space-y-8">
           <h3 className="text-3xl font-bold text-white">Let's Connect</h3>
